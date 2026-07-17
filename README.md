@@ -1,81 +1,119 @@
 # The-3D-Container-Loading-Optimizer
-2nd Year AI project
-<<<<<<< Updated upstream
-Ines: I added the preprocessing part
-Ines: I added the generated data to the local one we have 
 
-## Notebook Link Summary
+## Project Summary
 
-The desktop app can be linked to `notebooks/NoteBook.ipynb` through `notebook_backend.py`.
+This repository contains a complete 3D container loading optimizer built as a desktop application. It is a 2nd-year AI project that demonstrates real-world packing optimization using ZR Express shipment data, notebook-backed algorithm execution, and a custom Tkinter GUI.
 
-How it works:
-- `app.py` imports from `notebook_backend.py`
-- `notebook_backend.py` reads `notebooks/NoteBook.ipynb`
-- it extracts the useful Python code cells
-- it executes them in memory
-- it exposes wrapper functions like `greedy_pack`, `genetic_algorithm`, and `simulated_annealing`
-- it converts notebook results into the format expected by the GUI
+The system combines:
+- real loading data from ZR Express,
+- a powerful desktop visualization interface,
+- greedy, genetic, and simulated annealing packing algorithms,
+- notebook integration to reuse experimental notebook code,
+- flexible container presets and custom packing workflows.
 
-So the connection is:
+## Why This Project Matters
 
-`app.py` -> `notebook_backend.py` -> `notebooks/NoteBook.ipynb`
+Efficient container loading is a critical logistics problem for shipping, warehousing, and transport planning. This project showcases how algorithmic optimization can improve space utilization, reduce wasted volume, and make packing decisions more predictable for real shipments.
 
-## Greedy Fix Summary
+## Data Source and Attribution
 
-When the app was first linked to the notebook, Greedy looked broken for two reasons:
+This repository includes a preprocessed dataset derived from ZR Express loading data. Most additional sample datasets were removed, leaving the current available dataset for app and experiment use.
 
-1. There was a loader bug in `notebook_backend.py`
-- the notebook code was executed with `exec()`
-- the notebook dataclasses needed a real module in `sys.modules`
-- without that, the first real algorithm call could fail at runtime
+Included dataset:
+- `data/boxes_360_preprocessed.csv`
 
-Fix:
-- a runtime module was created with `types.ModuleType`
-- it was registered in `sys.modules`
-- then the notebook code was executed inside that module namespace
+This file contains box dimensions, weights, fragility flags, and packing metadata used by the app and optimization engine.
 
-2. The notebook Greedy path is slower than the original app backend
-- the first run has notebook parsing + compilation overhead
-- the notebook packing logic is heavier than `optimizer.py`
-- especially the free-space cleanup logic inside the notebook implementation
+## Application Architecture
 
-Result:
-- the first Greedy run now works correctly
-- but notebook-backed Greedy is still slower than the original `optimizer.py` approach
+The main application architecture is:
 
-## Simulated Annealing Fix Summary
+`app_modified.py` -> `app_engine.py` -> `notebooks/NoteBook.ipynb`
 
-Simulated annealing was also too slow in the app.
+- `app_modified.py` is the desktop application entry point.
+- `app_engine.py` contains the optimizer API, model classes, container definitions, and notebook integration logic.
+- `notebooks/NoteBook.ipynb` contains the original packing algorithm implementations and experiment code.
 
-Why:
-- the notebook SA implementation is expensive for a GUI workflow
-- the previous app defaults were very heavy:
-  - `Start Temp = 1000`
-  - `End Temp = 0.1`
-  - `Cooling Rate = 0.995`
-  - `Iters/Step = 30`
-- those settings produce a very large number of evaluations, so the app can feel frozen
+### Notebook Integration
 
-Fix:
-- the app backend now routes `simulated_annealing()` through the faster implementation in `optimizer.py`
-- the default SA values in `app.py` were reduced to faster GUI-friendly settings:
-  - `Start Temp = 150`
-  - `End Temp = 5`
-  - `Cooling Rate = 0.97`
-  - `Iters/Step = 6`
-- the SA implementation in `optimizer.py` was also tightened:
-  - sequence evaluations are cached
-  - progress updates happen more often
-  - the search stops early when it is no longer improving the greedy baseline
+The app uses a notebook-backed runtime to import algorithm implementations without rewriting the notebook code.
+- `app_engine.py` reads `notebooks/NoteBook.ipynb`.
+- It extracts relevant classes and function definitions.
+- The notebook code is executed in a runtime module.
+- Wrapper functions such as `greedy_pack`, `genetic_algorithm`, and `simulated_annealing` are exposed to the GUI.
 
-Result:
-- SA is still available in the app
-- it should respond much faster with the default settings
-- if needed, the user can still manually increase the SA parameters for a deeper search
+This lets the desktop app reuse notebook research code while keeping the GUI and engine separated from the raw notebook.
 
-## Important Note
 
-For experiments and demonstrations, using the notebook backend is fine.
-For a fast and stable desktop app, `optimizer.py` is still the better backend.
-=======
->>>>>>> Stashed changes
+
+### Performance Note
+
+The notebook-backed greedy implementation is still slower than a native `optimizer.py`-style backend because:
+- notebook parsing and compilation add overhead,
+- the notebook packing logic includes heavier free-space cleanup,
+- the notebook path is optimized for research, not maximum GUI speed.
+
+For production-quality use, the fastest backend remains the original optimized algorithm implementation.
+
+
+## Features
+
+- interactive 3D visualization of containers and placed boxes,
+- zoom, rotate, and selection controls,
+- box orientation and reposition editing for non-fragile items,
+- editable container presets and custom dimensions,
+- dataset-driven packing with real-world ZR Express box data,
+- support for fragile items and placement stability checks,
+- optimized notebook-backed algorithm integration,
+- multiple optimization modes: greedy, genetic, and simulated annealing.
+
+## Full Repository Structure
+
+- `app_modified.py` — main desktop application entry point and GUI launcher.
+- `app_engine.py` — core optimizer engine, packing API, notebook loader, and algorithm wrappers.
+- `notebooks/NoteBook.ipynb` — original algorithm research notebook.
+- `data/` — current available preprocessed dataset used for experiments and evaluation.
+- `README.md` — project documentation.
+
+## Setup and Run Instructions
+
+### 1. Install dependencies
+
+```powershell
+python -m pip install pandas numpy matplotlib
+```
+
+On Windows, `tkinter` is typically included with standard Python. If not, install the Python Tcl/Tk support package.
+
+### 2. Start the app
+
+```powershell
+python app_modified.py
+```
+
+The application launches the desktop GUI and loads the optimizer engine from `app_engine.py`.
+
+## Usage Notes
+
+- Use the GUI to select a container type or enter custom container dimensions.
+- Load the available preprocessed dataset from the `data/` folder.
+- Run greedy, genetic, or simulated annealing packing modes.
+- Inspect the 3D placement view and adjust box orientation when needed.
+
+## Recommended Workflow
+
+1. Begin with greedy packing to get a fast baseline.
+2. Use genetic algorithm for broader sequence improvement.
+3. Use simulated annealing for fine-tuned packing quality when time allows.
+
+## Important Project Notes
+
+- The dataset is sourced from ZR Express and represents real logistics packing use cases.
+- The notebook integration enables rapid research reuse without rewriting algorithm logic.
+- The GUI is designed to show both algorithm behavior and packing quality clearly.
+- This repository provides both a research-focused notebook and a practical desktop application.
+
+## Contact and Credits
+
+This project was developed as a 2nd-year AI project in container loading optimization. It highlights algorithm design, notebook integration, desktop UX, and real dataset experiments.
+
